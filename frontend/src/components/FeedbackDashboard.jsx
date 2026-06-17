@@ -4,6 +4,9 @@ function ScoreCard({ label, score, highlight = false }) {
       <span>{label}</span>
       <strong>{score}</strong>
       <small>/ 100</small>
+      <div className="score-progress" aria-label={`${label} score ${score} out of 100`}>
+        <div style={{ width: `${score}%` }} />
+      </div>
     </article>
   );
 }
@@ -13,9 +16,12 @@ function FeedbackList({ title, items }) {
   return (
     <section className="feedback-list-card">
       <h3>{title}</h3>
-      <ul>
+      <ul className="feedback-list">
         {items.map((item, index) => (
-          <li key={`${title}-${index}`}>{item}</li>
+          <li key={`${title}-${index}`}>
+            <span>{index + 1}</span>
+            <p>{item}</p>
+          </li>
         ))}
       </ul>
     </section>

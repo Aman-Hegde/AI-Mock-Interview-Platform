@@ -61,17 +61,48 @@ function App() {
     setFeedback(null);
   }
 
+  const featureCards = [
+    {
+      title: "Resume Analysis",
+      text: "Extract resume content and use it as interview context.",
+    },
+    {
+      title: "AI Interview Questions",
+      text: "Generate role-specific technical questions with Gemini.",
+    },
+    {
+      title: "Smart Feedback Dashboard",
+      text: "Review scores, strengths, weaknesses, and next steps.",
+    },
+  ];
+
   return (
     <main className="app-shell">
       <section className="hero-section">
         <div className="hero-content">
-          <p className="eyebrow">Interview practice, powered by your resume</p>
+          <p className="eyebrow">Final-year AI project demo</p>
           <h1>AI Mock Interview Platform</h1>
           <p className="subtitle">
-            Upload your resume, preview the extracted text, and prepare for a
-            smarter mock interview workflow.
+            Upload your resume, generate role-specific questions, answer them
+            in a guided session, and receive a structured AI feedback report.
           </p>
         </div>
+
+        <div className="hero-panel" aria-hidden="true">
+          <span>Gemini AI</span>
+          <strong>Interview Engine</strong>
+          <small>Resume to feedback in one workflow</small>
+        </div>
+      </section>
+
+      <section className="feature-grid">
+        {featureCards.map((feature, index) => (
+          <article className="feature-card" key={feature.title}>
+            <span>0{index + 1}</span>
+            <h2>{feature.title}</h2>
+            <p>{feature.text}</p>
+          </article>
+        ))}
       </section>
 
       <section className="workspace-grid">
@@ -101,54 +132,54 @@ function App() {
       </section>
 
       {!feedback && (
-      <section className="question-workspace">
-        <div className="question-controls">
-          <div>
-            <p className="eyebrow">Role setup</p>
-            <h2>Generate interview questions</h2>
-          </div>
-
-          <RoleSelector
-            selectedRole={selectedRole}
-            onRoleChange={setSelectedRole}
-          />
-
-          <button
-            className="primary-button"
-            onClick={handleGenerateQuestions}
-            disabled={!resumeResult || !selectedRole || isGenerating}
-          >
-            {isGenerating ? "Generating..." : "Generate Questions"}
-          </button>
-
-          {isGenerating && (
-            <p className="loading-message">Generating interview questions...</p>
-          )}
-          {questionError && <p className="error-message">{questionError}</p>}
-        </div>
-
-        {!isInterviewStarted && (
-          <div className="questions-panel">
-            <div className="questions-grid">
-              {questions.map((question, index) => (
-                <article className="question-card" key={`${question}-${index}`}>
-                  <span>Question {index + 1}</span>
-                  <p>{question}</p>
-                </article>
-              ))}
+        <section className="question-workspace">
+          <div className="question-controls">
+            <div>
+              <p className="eyebrow">Role setup</p>
+              <h2>Generate interview questions</h2>
             </div>
 
-            {questions.length > 0 && (
-              <button
-                className="primary-button start-interview-button"
-                onClick={() => setIsInterviewStarted(true)}
-              >
-                Start Interview
-              </button>
+            <RoleSelector
+              selectedRole={selectedRole}
+              onRoleChange={setSelectedRole}
+            />
+
+            <button
+              className="primary-button"
+              onClick={handleGenerateQuestions}
+              disabled={!resumeResult || !selectedRole || isGenerating}
+            >
+              {isGenerating ? "Generating..." : "Generate Questions"}
+            </button>
+
+            {isGenerating && (
+              <p className="loading-message">Generating interview questions...</p>
             )}
+            {questionError && <p className="error-message">{questionError}</p>}
           </div>
-        )}
-      </section>
+
+          {!isInterviewStarted && (
+            <div className="questions-panel">
+              <div className="questions-grid">
+                {questions.map((question, index) => (
+                  <article className="question-card" key={`${question}-${index}`}>
+                    <span>Question {index + 1}</span>
+                    <p>{question}</p>
+                  </article>
+                ))}
+              </div>
+
+              {questions.length > 0 && (
+                <button
+                  className="primary-button start-interview-button"
+                  onClick={() => setIsInterviewStarted(true)}
+                >
+                  Start Interview
+                </button>
+              )}
+            </div>
+          )}
+        </section>
       )}
 
       {isInterviewStarted && !feedback && (

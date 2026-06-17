@@ -16,6 +16,10 @@ function InterviewSession({ questions, role, onEvaluationComplete }) {
 
   const currentAnswer = answers[currentQuestionIndex]?.answer || "";
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const answerWordCount = currentAnswer.trim()
+    ? currentAnswer.trim().split(/\s+/).length
+    : 0;
+  const hasAnswer = currentAnswer.trim().length > 0;
 
   function handleAnswerChange(event) {
     const updatedAnswers = [...answers];
@@ -66,8 +70,8 @@ function InterviewSession({ questions, role, onEvaluationComplete }) {
           <p className="eyebrow">Interview session</p>
           <h2>Answer one question at a time</h2>
         </div>
-        <span>
-          {currentQuestionIndex + 1} / {questions.length}
+        <span className="progress-pill">
+          Question {currentQuestionIndex + 1} of {questions.length}
         </span>
       </div>
 
@@ -85,6 +89,11 @@ function InterviewSession({ questions, role, onEvaluationComplete }) {
         />
       </label>
 
+      <div className="answer-meta">
+        <span>{answerWordCount} word{answerWordCount === 1 ? "" : "s"}</span>
+        {!hasAnswer && <span>Answer required to continue</span>}
+      </div>
+
       {isLastQuestion ? (
         <button
           className="primary-button"
@@ -94,7 +103,11 @@ function InterviewSession({ questions, role, onEvaluationComplete }) {
           {isEvaluating ? "Evaluating..." : "Submit Interview"}
         </button>
       ) : (
-        <button className="primary-button" onClick={handleNextQuestion}>
+        <button
+          className="primary-button"
+          onClick={handleNextQuestion}
+          disabled={!hasAnswer}
+        >
           Next Question
         </button>
       )}
