@@ -1,10 +1,65 @@
 import { useState } from "react";
 
+import FeedbackDashboard from "./components/FeedbackDashboard";
+import InterviewSession from "./components/InterviewSession";
 import ResumeUpload from "./components/ResumeUpload";
+import RoleSelector from "./components/RoleSelector";
+import { generateQuestions } from "./services/api";
 
 
 function App() {
   const [resumeResult, setResumeResult] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [questions, setQuestions] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [questionError, setQuestionError] = useState("");
+  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  function handleUploadSuccess(result) {
+    // Reset interview state whenever a new resume is uploaded.
+    setResumeResult(result);
+    setSelectedRole("");
+    setQuestions([]);
+    setQuestionError("");
+    setIsInterviewStarted(false);
+    setFeedback(null);
+  }
+
+  async function handleGenerateQuestions() {
+    if (!resumeResult?.text_preview || !selectedRole) {
+      setQuestionError("Upload a resume and select a role first.");
+      return;
+    }
+
+    setIsGenerating(true);
+    setQuestionError("");
+    setQuestions([]);
+    setIsInterviewStarted(false);
+    setFeedback(null);
+
+    try {
+      const data = await generateQuestions(resumeResult.text_preview, selectedRole);
+
+      // Support either a direct array response or an object with a questions key.
+      const returnedQuestions = Array.isArray(data) ? data : data.questions;
+      setQuestions(returnedQuestions || []);
+    } catch (error) {
+      setQuestionError(error.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  function handleRestartInterview() {
+    // Clear the full interview flow so the user can begin again from upload.
+    setResumeResult(null);
+    setSelectedRole("");
+    setQuestions([]);
+    setQuestionError("");
+    setIsInterviewStarted(false);
+    setFeedback(null);
+  }
 
   return (
     <main className="app-shell">
@@ -20,7 +75,7 @@ function App() {
       </section>
 
       <section className="workspace-grid">
-        <ResumeUpload onUploadSuccess={setResumeResult} />
+        <ResumeUpload onUploadSuccess={handleUploadSuccess} />
 
         <div className="preview-card">
           <div>
@@ -44,6 +99,73 @@ function App() {
           )}
         </div>
       </section>
+
+      {!feedback && (
+      <section className="question-workspace">
+        <div className="question-controls">
+          <div>
+            <p className="eyebrow">Role setup</p>
+            <h2>Generate interview questions</h2>
+          </div>
+
+          <RoleSelector
+            selectedRole={selectedRole}
+            onRoleChange={setSelectedRole}
+          />
+
+          <button
+            className="primary-button"
+            onClick={handleGenerateQuestions}
+            disabled={!resumeResult || !selectedRole || isGenerating}
+          >
+            {isGenerating ? "Generating..." : "Generate Questions"}
+          </button>
+
+          {isGenerating && (
+            <p className="loading-message">Generating interview questions...</p>
+          )}
+          {questionError && <p className="error-message">{questionError}</p>}
+        </div>
+
+        {!isInterviewStarted && (
+          <div className="questions-panel">
+            <div className="questions-grid">
+              {questions.map((question, index) => (
+                <article className="question-card" key={`${question}-${index}`}>
+                  <span>Question {index + 1}</span>
+                  <p>{question}</p>
+                </article>
+              ))}
+            </div>
+
+            {questions.length > 0 && (
+              <button
+                className="primary-button start-interview-button"
+                onClick={() => setIsInterviewStarted(true)}
+              >
+                Start Interview
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+      )}
+
+      {isInterviewStarted && !feedback && (
+        <InterviewSession
+          questions={questions}
+          role={selectedRole}
+          onEvaluationComplete={setFeedback}
+        />
+      )}
+
+      {feedback && (
+        <FeedbackDashboard
+          feedback={feedback}
+          role={selectedRole}
+          onRestart={handleRestartInterview}
+        />
+      )}
     </main>
   );
 }
